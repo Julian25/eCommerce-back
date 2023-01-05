@@ -1,7 +1,7 @@
-const {Schema} = require('mongoose');
+const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 
-const userSchema = Schema({
+const UserSchema = mongoose.Schema({
     name: {
         type: String,
         required: [true, 'is required']
@@ -44,10 +44,54 @@ const userSchema = Schema({
     },
 
     order: {
-        type: Schema.Types.ObjectId, 
+        type: mongoose.Schema.Types.ObjectId, 
         ref: 'Order'
     }
 }, {minimize: false});
 
-const  User = mongoose.model('User', userSchema);
+
+UserSchema.statics.findByCredentials = async (email, password) => {
+    const user = User.findOne({email});
+    if(!user) throw new Error('Invalid credentials');
+    const isSamePassword = bcrypt.compareSync(password, user.password);
+    if (isSamePassword) return user;
+    throw new Error('Invalid credentials')
+}
+
+UserSchema.method.toJSON = () => {
+    const user = this;
+    const userObject = user.toObject();
+    delete userObject.password;
+    return userObject;
+}
+
+//before saving hash the password 
+
+UserSchema.pre('save', function (next) {
+
+    const user = this;
+  
+    if(!user.isModified('password')) return next();
+  
+    bcrypt.genSalt(10, function(err, salt){
+      if(err) return next(err);
+  
+      bcrypt.hash(user.password, salt, function(err, hash){
+        if(err) return next(err);
+  
+        user.password = hash;
+        next();
+      })
+  
+    })
+  
+  })
+
+UserSchema.pre('remove', (next) => {
+    this.model('order').remove({owner: this._id, next});
+})
+
+
+
+const  User = mongoose.model('User', UserSchema);
 module.exports = User;
