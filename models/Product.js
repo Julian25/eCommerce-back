@@ -11,7 +11,7 @@ const ProductSchema = mongoose.Schema({
         required: [true,'required'],
     },
 
-    prince:  {
+    price:  {
         type: String,
         required: [true,'required'],
     },

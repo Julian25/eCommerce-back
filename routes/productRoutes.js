@@ -16,16 +16,16 @@ router.get('/', async (req,res) =>{
 
 //create a product 
 
-router.post('/', async (req,res) => {
-    try {
-        const {name, description, prince, category, img: pictures} = req.body;
-        const product = await Product.create({name, description, prince, category, pictures});
-        const products = await Product.find(products);
-        res.status(201).json(products)
-    } catch (e) {
-        res.status(400).send(e.message);
-    }
-});
+router.post('/', async(req, res)=> {
+  try {
+    const {name, description, price, category, images: pictures} = req.body;
+    const product = await Product.create({name, description, price, category, pictures});
+    const products = await Product.find();
+    res.status(201).json(products);
+  } catch (e) {
+    res.status(400).send(e.message);
+  }
+})
 
 //update a product 
 
